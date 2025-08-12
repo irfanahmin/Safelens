@@ -1,0 +1,72 @@
+body {
+    margin: 0;
+    padding: 0;
+    background: linear-gradient(to right, #e3b99a, #e08d6e); /* Gradient background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    width: 90%;
+    max-width: 1200px;
+    height: 80%;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    background: rgba(227, 185, 154, 0.8); /* Semi-transparent background to distinguish the container */
+}
+
+.left-side {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to bottom, rgba(227, 185, 154, 0.8), rgba(255, 255, 255, 0.8)); /* Gradient background */
+}
+
+.logo {
+    width: 300px;
+    margin-bottom: 40px;
+    object-fit: contain;
+}
+
+.launch-button {
+    background: linear-gradient(to right, #e08d6e, #cf7b5a); /* Gradient background for button */
+    color: #fff;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.3s ease; /* Smooth transition for hover effect */
+}
+
+.launch-button:hover {
+    background: linear-gradient(to right, #cf7b5a, #b66c49); /* Darker gradient on hover */
+}
+
+.right-side {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9), rgba(227, 185, 154, 0.8)); /* Gradient background */
+    position: relative;
+}
+
+.camera-feed {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-left: 2px solid #e08d6e;
+}
+
+.blur {
+    filter: blur(20px);
+    transition: filter 0.3s ease;
+}

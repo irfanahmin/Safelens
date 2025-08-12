@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Launch Page</title>
+    <link rel="stylesheet" href="sl.css">
+</head>
+<body>
+   
+    <div class="container">
+        <div class="left-side">
+            <img src="C:\Users\Dell\OneDrive\Documents\safe.jpg" alt="App Logo" class="logo">
+            <button id="launchButton" class="launch-button">Launch</button>
+        </div>
+        <div class="right-side">
+            <video id="liveFeed" autoplay muted class="camera-feed"></video>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.9.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@1.1.0"></script>
+    <script>
+        // JavaScript code to handle launching the camera and blurring the frame
+
+        const launchButton = document.getElementById('launchButton');
+        const video = document.getElementById('liveFeed');
+
+        let model;
+
+        // Load the MobileNet model
+        async function loadModel() {
+            model = await tf.loadGraphModel("C:\Users\Dell\OneDrive\Documents\mobilenet.txt");
+        }
+
+        // Function to start the camera
+        function startCamera() {
+            if (navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        detectShirtless();
+                    })
+                    .catch(function (error) {
+                        console.error('Error accessing camera: ', error);
+                    });
+            }
+        }
+
+        // Function to detect shirtless images
+        async function detectShirtless() {
+            const image = await tf.browser.fromPixels(video);
+            const logits = model.predict(image);
+            const prediction = await tf.argMax(logits, 1).data();
+            if (prediction[0] === 0) { // Assuming class 0 represents shirtless
+                blurFrame();
+            }
+            image.dispose();
+            logits.dispose();
+            setTimeout(detectShirtless, 1000); // Repeat detection every second
+        }
+
+        // Function to stop the camera
+        function stopCamera() {
+            let stream = video.srcObject;
+            if (stream) {
+                let tracks = stream.getTracks();
+                tracks.forEach(function (track) {
+                    track.stop();
+                });
+                video.srcObject = null;
+            }
+        }
+
+        // Function to blur the video frame
+        function blurFrame() {
+            video.classList.add('blur');
+            setTimeout(() => {
+                video.classList.remove('blur');
+            }, 10000); // 10 seconds
+        }
+
+        // Event listener for the launch button
+        launchButton.addEventListener('click', function () {
+            startCamera();
+        });
+
+        // Load the MobileNet model when the page is loaded
+        loadModel();
+    </script>
+</body>
+</html>
