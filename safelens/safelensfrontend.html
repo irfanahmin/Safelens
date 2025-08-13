@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Launch Page</title>
+    <link rel="stylesheet" href="sl.css">
+</head>
+<body>
+    <div class="container">
+        <div class="left-side">
+            <img src="safe.jpg" alt="App Logo" class="logo">
+            <button id="launchButton" class="launch-button">Launch</button>
+        </div>
+        <div class="right-side">
+            <video id="liveFeed" autoplay muted class="camera-feed"></video>
+        </div>
+    </div>
+    <script>
+        const launchButton = document.getElementById('launchButton');
+        const video = document.getElementById('liveFeed');
+        let socket;
+
+        function startCamera() {
+            if (navigator.mediaDevices.getUserMedia) {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(function (stream) {
+                        video.srcObject = stream;
+                        video.onloadedmetadata = () => {
+                            video.play();
+                            setupSocket();
+                        };
+                    })
+                    .catch(function (error) {
+                        console.error('Error accessing camera: ', error);
+                    });
+            }
+        }
+
+        function setupSocket() {
+            socket = new WebSocket('ws://127.0.0.1:12345');
+
+            socket.onopen = function() {
+                console.log('WebSocket connection opened');
+                sendFrame();
+            };
+
+            socket.onmessage = function(event) {
+                const result = JSON.parse(event.data);
+                console.log('Received:', result);
+                if (result.class === "shirtless") {
+                    console.log('Shirtless person detected. Applying blur effect.');
+                    applyBlur();
+                } else {
+                    removeBlur();
+                }
+            };
+
+            socket.onclose = function() {
+                console.log('WebSocket connection closed');
+            };
+
+            socket.onerror = function(error) {
+                console.error('WebSocket error:', error);
+            };
+        }
+
+        function sendFrame() {
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            canvas.toBlob(blob => {
+                if (blob && socket.readyState === WebSocket.OPEN) {
+                    console.log('Sending frame...');
+                    blob.arrayBuffer().then(buffer => {
+                        socket.send(buffer);
+                        console.log('Frame sent');
+                    }).catch(error => console.error('Error converting blob to arrayBuffer:', error));
+                } else {
+                    console.error('Failed to capture video frame or WebSocket not open');
+                }
+                setTimeout(sendFrame, 1000); // Send a frame every second
+            }, 'image/jpeg');
+        }
+
+        function applyBlur() {
+            video.style.filter = 'blur(10px)';
+        }
+
+        function removeBlur() {
+            video.style.filter = 'none';
+        }
+
+        launchButton.addEventListener('click', function () {
+            startCamera();
+        });
+    </script>
+</body>
+</html>
+ <!-- python -m http.server 8000 -->
+
+ <!--netstat -aon | findstr :12345
+ taskkill /PID <PID> /F -->
